@@ -373,26 +373,6 @@
         <span id="globalToastMessage"></span>
     </div>
 
-    <!-- Modal: Compare Before & After -->
-    <div id="compareModal" class="fixed inset-0 z-[100] hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2"><i class="ph ph-arrows-left-right text-medical-500 text-xl"></i> เปรียบเทียบผลลัพธ์ (Before & After)</h3>
-                <button onclick="closeCompareModal()" class="text-gray-400 hover:text-red-500 transition-colors focus:outline-none"><i class="ph ph-x text-2xl"></i></button>
-            </div>
-            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-100/50 overflow-y-auto">
-                <div class="flex flex-col items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 h-full">
-                    <span class="px-4 py-1.5 bg-gray-100 text-gray-600 rounded-full text-xs font-bold mb-4 uppercase tracking-wider flex items-center gap-1"><i class="ph ph-clock-counter-clockwise"></i> Before (ก่อนทำ)</span>
-                    <div id="compareBeforeContent" class="w-full flex-1 flex justify-center items-center min-h-[250px] text-gray-500 text-sm"></div>
-                </div>
-                <div class="flex flex-col items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100 h-full">
-                    <span class="px-4 py-1.5 bg-medical-50 text-medical-700 rounded-full text-xs font-bold mb-4 uppercase tracking-wider flex items-center gap-1"><i class="ph ph-sparkle text-medical-500"></i> After (หลังทำ)</span>
-                    <div id="compareAfterContent" class="w-full flex-1 flex justify-center items-center min-h-[250px] text-gray-500 text-sm"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script>
         // ==========================================
         // 1. Data Config & State
@@ -445,7 +425,7 @@
         async function fetchAllData() {
             globalLoader.classList.remove('hidden');
             let completed = 0;
-            
+
             devices.forEach(d => { globalData[d.id] = { headers: [], rows: [], count: 0, totalUsage: 0, config: d }; });
 
             const fetchPromises = devices.map(async (device) => {
@@ -472,25 +452,36 @@
                                         const headers = results.data[0];
                                         const rows = results.data.slice(1);
                                         
-                                        const beforeIdx = headers.findIndex(h => /before|ก่อน/i.test(h));
-                                        const afterIdx = headers.findIndex(h => /after|หลัง/i.test(h));
                                         const dateColIdx = headers.findIndex(h => /วันที่/i.test(h));
                                         
                                         let deviceTotalUsage = 0;
                                         
+                                        const usageColMap = {
+                                            'density':  { b: [6,8,10,12,14,16], a: [7,9,11,13,15,17] },
+                                            'linearZ':  { b: [6,8,10,12], a: [7,9,11,13] },
+                                            'ultracel': { b: [6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36], a: [7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37] },
+                                            'virtue':   { b: [6,8,10,12,14,16], a: [7,9,11,13,15,17] }
+                                        };
+                                        
                                         const processedRows = rows.map((row, originalIndex) => {
                                             let usage = 0;
-                                            if (beforeIdx !== -1 && afterIdx !== -1) {
-                                                const bStr = row[beforeIdx] ? row[beforeIdx].toString().replace(/[^0-9.-]+/g,"") : "";
-                                                const aStr = row[afterIdx] ? row[afterIdx].toString().replace(/[^0-9.-]+/g,"") : "";
-                                                const b = parseFloat(bStr);
-                                                const a = parseFloat(aStr);
-                                                
-                                                if (!isNaN(b) && !isNaN(a)) {
-                                                    usage = Math.abs(a - b);
-                                                    deviceTotalUsage += usage;
+                                            const mapping = usageColMap[device.id];
+                                            if (mapping) {
+                                                for(let i = 0; i < mapping.b.length; i++) {
+                                                    const bCol = mapping.b[i];
+                                                    const aCol = mapping.a[i];
+                                                    const bStr = row[bCol] ? row[bCol].toString().replace(/[^0-9.-]+/g,"") : "";
+                                                    const aStr = row[aCol] ? row[aCol].toString().replace(/[^0-9.-]+/g,"") : "";
+                                                    const b = parseFloat(bStr);
+                                                    const a = parseFloat(aStr);
+                                                    
+                                                    if (!isNaN(b) && !isNaN(a)) {
+                                                        usage += Math.abs(a - b);
+                                                    }
                                                 }
                                             }
+                                            
+                                            deviceTotalUsage += usage;
                                             row._usage = usage; 
                                             row._originalIndex = originalIndex; 
 
@@ -562,6 +553,8 @@
 
             let monthlyCases = {};
             let yearlyCases = {};
+            
+            let barLabelText = 'Consumer ที่ใช้ (หน่วย)';
 
             const processRowDate = (r) => {
                 if(r._year !== 'N/A') {
@@ -573,8 +566,9 @@
             if (filter === 'all') {
                 document.getElementById('kpiLabel1').textContent = "จำนวน Demo ทั้งหมด";
                 document.getElementById('kpiLabel3').textContent = "เครื่องที่ถลุง Consumer สูงสุด";
-                document.getElementById('chart1Title').innerHTML = '<i class="ph ph-chart-pie-slice text-medical-500"></i> สัดส่วนการใช้ Consumer (แยกตามเครื่อง)';
-                document.getElementById('chart2Title').innerHTML = '<i class="ph ph-chart-bar text-medical-500"></i> เปรียบเทียบปริมาณ Consumer ที่ใช้ (รายเครื่อง)';
+                document.getElementById('chart1Title').innerHTML = '<i class="ph ph-chart-pie-slice text-medical-500"></i> สัดส่วนเครื่องที่ออก Demo (ตามจำนวนคลินิก)';
+                document.getElementById('chart2Title').innerHTML = '<i class="ph ph-chart-bar text-medical-500"></i> เปรียบเทียบจำนวนเครื่องที่ออก Demo (รายเครื่อง)';
+                barLabelText = 'จำนวนคลินิกที่เข้า Demo (ครั้ง)';
 
                 let maxUsageDevice = { name: '-', count: -1 };
 
@@ -591,11 +585,11 @@
                     }
                     
                     chart1Labels.push(d.name);
-                    chart1Data.push(usage); 
+                    chart1Data.push(count); // เปลี่ยนมาใช้จำนวนคลินิก (Demo) แทนยอดการใช้ Consumer
                     chart1Colors.push(d.color);
 
                     chart2Labels.push(d.name);
-                    chart2Data.push(usage); 
+                    chart2Data.push(count); // เปลี่ยนมาใช้จำนวนคลินิก (Demo) แทนยอดการใช้ Consumer
                     chart2Colors.push(d.color);
 
                     deviceData.rows.forEach(processRowDate);
@@ -619,8 +613,9 @@
 
                 document.getElementById('kpiLabel1').textContent = `จำนวน Demo (${config.name})`;
                 document.getElementById('kpiLabel3').textContent = "คลินิกที่ใช้ Consumer สูงสุด";
-                document.getElementById('chart1Title').innerHTML = `<i class="ph ph-chart-pie-slice text-medical-500"></i> สัดส่วน ${config.name} เทียบกับยอดรวมทั้งหมด`;
+                document.getElementById('chart1Title').innerHTML = `<i class="ph ph-chart-pie-slice text-medical-500"></i> สัดส่วนการออก Demo ${config.name} เทียบกับทั้งหมด`;
                 document.getElementById('chart2Title').innerHTML = `<i class="ph ph-chart-bar text-medical-500"></i> Top 10 คลินิกที่ใช้ Consumer สูงสุด (${config.name})`;
+                barLabelText = 'Consumer ที่ใช้ (หน่วย)';
 
                 let nameColIdx = -1;
                 if (deviceData.headers) {
@@ -643,15 +638,15 @@
                     document.getElementById('kpiTopUsageCount').textContent = '0 หน่วย';
                 }
 
-                let globalUsage = 0;
+                let globalCount = 0;
                 devices.forEach(d => {
                     const dt = globalData[d.id];
-                    if (dt) globalUsage += (dt.totalUsage || 0);
+                    if (dt) globalCount += (dt.count || 0);
                 });
-                const othersUsage = globalUsage - totalAllUsage;
+                const othersCount = globalCount - totalCases;
 
                 chart1Labels = [config.name, 'เครื่องอื่นๆ รวมกัน'];
-                chart1Data = [totalAllUsage, othersUsage];
+                chart1Data = [totalCases, othersCount]; // เทียบสัดส่วนด้วยจำนวนครั้งที่ออก Demo
                 chart1Colors = [config.color, '#e5e7eb'];
 
                 let sortedRows = [];
@@ -701,10 +696,10 @@
                 <span>สรุปยอดปี ${latestYear !== '-' ? parseInt(latestYear) + 543 : '-'}: <strong class="text-lg">${latestYearCount}</strong> คลินิก</span>
             `;
 
-            drawCharts(chart1Labels, chart1Data, chart1Colors, chart2Labels, chart2Data, chart2Colors, trendLabels, trendData);
+            drawCharts(chart1Labels, chart1Data, chart1Colors, chart2Labels, chart2Data, chart2Colors, trendLabels, trendData, barLabelText);
         }
 
-        function drawCharts(labels1, data1, colors1, labels2, data2, colors2, trendLabels, trendData) {
+        function drawCharts(labels1, data1, colors1, labels2, data2, colors2, trendLabels, trendData, barLabel) {
             if(shareChartInst) shareChartInst.destroy();
             if(barChartInst) barChartInst.destroy();
             if(trendChartInst) trendChartInst.destroy();
@@ -726,7 +721,7 @@
             const ctxBar = document.getElementById('barChart').getContext('2d');
             barChartInst = new Chart(ctxBar, {
                 type: 'bar',
-                data: { labels: labels2, datasets: [{ label: 'Consumer ที่ใช้ (หน่วย)', data: data2, backgroundColor: colors2, borderRadius: 6 }] },
+                data: { labels: labels2, datasets: [{ label: barLabel, data: data2, backgroundColor: colors2, borderRadius: 6 }] },
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     scales: {
@@ -812,8 +807,6 @@
                     const returnDateIdx = dHeaders.findIndex(h => /วันที่รับ|รับเครื่องกลับ|กลับ/i.test(h));
                     const purposeIdx = dHeaders.findIndex(h => /จุดประสงค์|วัตถุประสงค์/i.test(h));
                     const repIdx = dHeaders.findIndex(h => /ตัวแทน|ผู้แทน/i.test(h));
-                    const beforeIdx = dHeaders.findIndex(h => /before|ก่อน/i.test(h));
-                    const afterIdx = dHeaders.findIndex(h => /after|หลัง/i.test(h));
 
                     dataObj.rows.forEach(row => {
                         const virtualRow = [];
@@ -829,8 +822,6 @@
                         virtualRow._originalIndex = row._originalIndex;
                         virtualRow._deviceKey = d.id;
                         virtualRow._dateTimestamp = row._dateTimestamp;
-                        virtualRow._beforeVal = beforeIdx !== -1 ? row[beforeIdx] : '';
-                        virtualRow._afterVal = afterIdx !== -1 ? row[afterIdx] : '';
                         
                         // แบ็กอัปข้อมูลแถวดั้งเดิมเพื่อความครอบคลุมในการกดเสิร์ช
                         virtualRow._originalRow = row;
@@ -839,8 +830,7 @@
                     });
                 });
 
-                // เปิดฟังก์ชันก่อน-หลัง เปรียบเทียบภาพรวม
-                hasCompare = true;
+                hasCompare = true; // ให้ flag เป็น true เพื่อแสดงคอลัมน์ผลรวม
 
             } else {
                 // สำหรับแท็บเครื่องเดี่ยวรายเครื่องปกติ
@@ -857,9 +847,7 @@
                 headers = dataObj.headers;
                 rows = [...dataObj.rows];
                 
-                const beforeIdx = headers.findIndex(h => /before|ก่อน/i.test(h));
-                const afterIdx = headers.findIndex(h => /after|หลัง/i.test(h));
-                hasCompare = beforeIdx !== -1 && afterIdx !== -1;
+                hasCompare = true; // เปิดใช้งานคอลัมน์ผลรวม
             }
 
             // จัดเรียงตามวันที่จัดทำ Demo เสมอ (ข้อมูลล่าสุดอยู่บนสุด)
@@ -918,13 +906,28 @@
                 });
             }
 
-            // เตรียมข้อมูลสำหรับ Export
-            currentExportHeaders = displayOrder.map(colIdx => headers[colIdx] || '-');
-            if (hasCompare) currentExportHeaders.push('Consumer ที่ใช้ (หน่วย)');
+            // หาตำแหน่งที่จะแทรกคอลัมน์ผลรวม (ให้แทรกก่อนคอลัมน์ Before แรกเสมอ)
+            let insertIdx = displayOrder.length;
+            if (!isAllView) {
+                const foundIdx = displayOrder.findIndex(colIdx => /before|after|ก่อน|หลัง/i.test(headers[colIdx]));
+                if (foundIdx !== -1) insertIdx = foundIdx;
+            }
+
+            // เตรียมข้อมูลสำหรับ Export (เรียงลำดับให้ตรงกับตาเห็น)
+            currentExportHeaders = [];
+            displayOrder.forEach((colIdx, i) => {
+                if (hasCompare && i === insertIdx) currentExportHeaders.push('Consumer ที่ใช้ (หน่วย)');
+                currentExportHeaders.push(headers[colIdx] || '-');
+            });
+            if (hasCompare && insertIdx === displayOrder.length) currentExportHeaders.push('Consumer ที่ใช้ (หน่วย)');
             
             currentExportRows = rows.map(row => {
-                let rowData = displayOrder.map(colIdx => row[colIdx] ? row[colIdx].toString().trim() : '-');
-                if (hasCompare) rowData.push((row._usage && row._usage > 0) ? row._usage.toString() : '0');
+                let rowData = [];
+                displayOrder.forEach((colIdx, i) => {
+                    if (hasCompare && i === insertIdx) rowData.push((row._usage && row._usage > 0) ? row._usage.toString() : '0');
+                    rowData.push(row[colIdx] ? row[colIdx].toString().trim() : '-');
+                });
+                if (hasCompare && insertIdx === displayOrder.length) rowData.push((row._usage && row._usage > 0) ? row._usage.toString() : '0');
                 return rowData;
             });
 
@@ -935,7 +938,18 @@
 
             // สรรสร้างหัวข้อตาราง (Header DOM)
             let trHead = document.createElement('tr');
+            
+            let thUsage;
+            if (hasCompare) {
+                thUsage = document.createElement('th');
+                thUsage.className = "px-5 py-3 text-xs font-bold text-orange-600 bg-orange-50 uppercase tracking-wider whitespace-nowrap text-center shadow-[-1px_0_4px_-1px_rgba(0,0,0,0.05)] border-x border-orange-100/50";
+                thUsage.textContent = "🔥 Consumer ที่ใช้";
+            }
+
             displayOrder.forEach((colIdx, i) => {
+                if (hasCompare && i === insertIdx) {
+                    trHead.appendChild(thUsage);
+                }
                 const th = document.createElement('th');
                 th.className = "px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap";
                 if(i===0 && searchTerm) th.classList.add('bg-medical-100', 'text-medical-800');
@@ -943,16 +957,8 @@
                 trHead.appendChild(th);
             });
             
-            if (hasCompare) {
-                const thUsage = document.createElement('th');
-                thUsage.className = "px-5 py-3 text-xs font-bold text-orange-600 bg-orange-50 uppercase tracking-wider whitespace-nowrap text-center shadow-[-1px_0_4px_-1px_rgba(0,0,0,0.05)]";
-                thUsage.textContent = "🔥 Consumer ที่ใช้";
+            if (hasCompare && insertIdx === displayOrder.length) {
                 trHead.appendChild(thUsage);
-
-                const thCompare = document.createElement('th');
-                thCompare.className = "px-5 py-3 text-xs font-semibold text-medical-700 bg-medical-50 uppercase tracking-wider whitespace-nowrap text-center shadow-[-1px_0_4px_-1px_rgba(0,0,0,0.05)]";
-                thCompare.textContent = "เปรียบเทียบรูป";
-                trHead.appendChild(thCompare);
             }
             
             tableHead.innerHTML = ''; tableHead.appendChild(trHead);
@@ -969,7 +975,18 @@
                 rows.forEach(row => {
                     let tr = document.createElement('tr');
                     tr.className = "hover:bg-blue-50/50 transition-colors group";
+                    
+                    let tdUsage;
+                    if (hasCompare) {
+                        tdUsage = document.createElement('td');
+                        tdUsage.className = "px-5 py-2.5 whitespace-nowrap border-b border-gray-100/50 text-center font-bold text-orange-600 bg-orange-50/30 border-x border-orange-100/50";
+                        tdUsage.textContent = (row._usage && row._usage > 0) ? row._usage.toLocaleString() + ' หน่วย' : '-';
+                    }
+
                     displayOrder.forEach((colIdx, i) => {
+                        if (hasCompare && i === insertIdx) {
+                            tr.appendChild(tdUsage);
+                        }
                         const td = document.createElement('td');
                         td.className = "px-5 py-2.5 text-sm whitespace-nowrap border-b border-gray-100/50";
                         const cellData = row[colIdx] ? row[colIdx].toString().trim() : '-';
@@ -990,66 +1007,17 @@
                         }
                         tr.appendChild(td);
                     });
-                    if (hasCompare) {
-                        const tdUsage = document.createElement('td');
-                        tdUsage.className = "px-5 py-2.5 whitespace-nowrap border-b border-gray-100/50 text-center font-bold text-orange-600 bg-orange-50/30";
-                        tdUsage.textContent = (row._usage && row._usage > 0) ? row._usage.toLocaleString() + ' หน่วย' : '-';
+                    
+                    if (hasCompare && insertIdx === displayOrder.length) {
                         tr.appendChild(tdUsage);
-
-                        const tdCompare = document.createElement('td');
-                        tdCompare.className = "px-5 py-2.5 whitespace-nowrap border-b border-gray-100/50 text-center bg-white group-hover:bg-blue-50/50 transition-colors";
-                        
-                        let bData = '';
-                        let aData = '';
-                        if (isAllView) {
-                            bData = row._beforeVal || '';
-                            aData = row._afterVal || '';
-                        } else {
-                            const beforeIdx = headers.findIndex(h => /before|ก่อน/i.test(h));
-                            const afterIdx = headers.findIndex(h => /after|หลัง/i.test(h));
-                            bData = row[beforeIdx] ? row[beforeIdx].toString().trim() : '';
-                            aData = row[afterIdx] ? row[afterIdx].toString().trim() : '';
-                        }
-
-                        if (bData !== '' || aData !== '') {
-                            tdCompare.innerHTML = `<button onclick="openCompareModal('${encodeURIComponent(bData)}', '${encodeURIComponent(aData)}')" class="px-3 py-1.5 bg-medical-100 hover:bg-medical-500 text-medical-700 hover:text-white rounded-lg text-xs font-medium transition-colors shadow-sm flex items-center gap-1 mx-auto"><i class="ph ph-arrows-left-right"></i> ดูรูป</button>`;
-                        } else tdCompare.innerHTML = `<span class="text-gray-300 text-xs">-</span>`;
-                        tr.appendChild(tdCompare);
                     }
+                    
                     frag.appendChild(tr);
                 });
                 tableBody.appendChild(frag);
             }
             rowCountEl.textContent = rows.length.toLocaleString();
         }
-
-        function openCompareModal(beforeEnc, afterEnc) {
-            const before = decodeURIComponent(beforeEnc);
-            const after = decodeURIComponent(afterEnc);
-            const beforeUrl = getImageUrl(before);
-            const afterUrl = getImageUrl(after);
-            const beforeEl = document.getElementById('compareBeforeContent');
-            const afterEl = document.getElementById('compareAfterContent');
-            
-            if (beforeUrl) beforeEl.innerHTML = `<img src="${beforeUrl}" class="max-w-full max-h-[50vh] object-contain rounded shadow-sm" alt="Before">`;
-            else beforeEl.innerHTML = `<p class="text-lg text-gray-700 whitespace-pre-wrap text-center font-medium">${before || 'ไม่มีข้อมูล'}</p>`;
-            
-            if (afterUrl) afterEl.innerHTML = `<img src="${afterUrl}" class="max-w-full max-h-[50vh] object-contain rounded shadow-sm" alt="After">`;
-            else afterEl.innerHTML = `<p class="text-lg text-medical-700 whitespace-pre-wrap text-center font-medium">${after || 'ไม่มีข้อมูล'}</p>`;
-            
-            const modal = document.getElementById('compareModal');
-            modal.classList.remove('hidden');
-            void modal.offsetWidth;
-            modal.classList.remove('opacity-0');
-        }
-
-        function closeCompareModal() {
-            const modal = document.getElementById('compareModal');
-            modal.classList.add('opacity-0');
-            setTimeout(() => modal.classList.add('hidden'), 300);
-        }
-
-        document.getElementById('compareModal').addEventListener('click', function(e) { if (e.target === this) closeCompareModal(); });
 
         // ฟังก์ชันแสดง Toast Notification
         function showToast(message, isError = false) {
