@@ -89,6 +89,19 @@
             border-color: transparent;
             box-shadow: 0 4px 6px -1px rgba(7, 89, 133, 0.3);
         }
+
+        /* Drag to Scroll Classes */
+        .table-container {
+            -webkit-overflow-scrolling: touch; 
+            cursor: grab;
+        }
+        .table-container:active {
+            cursor: grabbing;
+        }
+        .no-select {
+            user-select: none;
+            -webkit-user-select: none;
+        }
     </style>
 </head>
 <body class="text-gray-800 antialiased h-screen w-full flex flex-col overflow-hidden">
@@ -306,63 +319,100 @@
         <!-- ========================================== -->
         <!-- VIEW 3: PRODUCTS DATA                      -->
         <!-- ========================================== -->
-        <div id="viewProducts" class="hidden w-full h-full flex-col gap-4">
+        <div id="viewProducts" class="hidden w-full h-full flex-col bg-white rounded-2xl overflow-hidden shadow-md border border-gray-100 relative">
             
-            <!-- Filters & Actions -->
-            <div class="flex flex-col xl:flex-row justify-between gap-3 shrink-0 bg-white/40 p-1 rounded-xl">
-                <!-- Search Inputs -->
-                <div class="flex flex-col sm:flex-row gap-2 w-full xl:w-auto">
-                    <div class="relative w-full sm:w-64">
-                        <i class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                        <input type="text" id="prodSearch1" placeholder="คำค้นหาที่ 1..." class="w-full pl-9 pr-3 py-2 bg-white/90 border border-gray-200 focus:border-medical-500 focus:ring-2 focus:ring-medical-200 rounded-xl text-sm transition-all shadow-sm outline-none">
+            <!-- Header Section (แบบใหม่) -->
+            <div class="bg-blue-600 text-white p-3 sm:p-5 flex flex-col xl:flex-row justify-between items-center shrink-0 gap-3 select-none z-20 shadow-md">
+                <div class="w-full xl:w-auto text-center xl:text-left flex items-center justify-center xl:justify-start gap-2">
+                    <div class="bg-white/20 p-2 rounded-lg">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                     </div>
-                    <div class="relative w-full sm:w-64">
-                        <i class="ph ph-funnel absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                        <input type="text" id="prodSearch2" placeholder="คำค้นหาที่ 2..." class="w-full pl-9 pr-3 py-2 bg-white/90 border border-gray-200 focus:border-medical-500 focus:ring-2 focus:ring-medical-200 rounded-xl text-sm transition-all shadow-sm outline-none">
+                    <div>
+                        <h1 class="text-xl sm:text-2xl font-bold mb-0.5">ข้อมูลผลิตภัณฑ์</h1>
+                        <p class="text-blue-100 text-xs sm:text-sm">ดึงข้อมูลแบบ Real-time จาก Google Sheets</p>
                     </div>
                 </div>
-
-                <!-- Date Filters & Export -->
-                <div class="flex flex-wrap items-center gap-2 w-full xl:w-auto justify-start xl:justify-end">
-                    <div class="flex items-center gap-2 bg-white/90 rounded-xl px-3 py-1.5 border border-gray-200 shadow-sm text-sm">
-                        <label class="text-gray-500 text-xs font-medium">ตั้งแต่</label>
-                        <input type="date" id="prodStartDate" class="bg-transparent outline-none text-gray-700 cursor-pointer text-xs">
+                
+                <div class="w-full xl:w-auto flex flex-col sm:flex-row gap-2 relative justify-end">
+                    <div class="flex gap-2 w-full">
+                        <!-- ช่องค้นหา 1 -->
+                        <div class="relative w-1/2 sm:w-48">
+                            <input type="text" id="prodSearch1" placeholder="คำค้นหา 1..." class="w-full pl-8 pr-2 py-2 rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300 shadow-sm transition text-xs sm:text-sm" disabled>
+                            <svg class="w-4 h-4 sm:w-4 sm:h-4 absolute left-2.5 top-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                        <!-- ช่องค้นหา 2 -->
+                        <div class="relative w-1/2 sm:w-48">
+                            <input type="text" id="prodSearch2" placeholder="กรองคำที่ 2..." class="w-full pl-8 pr-2 py-2 rounded-lg text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300 shadow-sm transition text-xs sm:text-sm" disabled>
+                            <svg class="w-4 h-4 sm:w-4 sm:h-4 absolute left-2.5 top-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                        </div>
                     </div>
-                    <div class="flex items-center gap-2 bg-white/90 rounded-xl px-3 py-1.5 border border-gray-200 shadow-sm text-sm">
-                        <label class="text-gray-500 text-xs font-medium">ถึง</label>
-                        <input type="date" id="prodEndDate" class="bg-transparent outline-none text-gray-700 cursor-pointer text-xs">
+                    <div class="flex gap-2 justify-end">
+                        <button id="prodRefreshBtn" class="bg-blue-700 hover:bg-blue-800 text-white p-2 sm:p-2.5 rounded-lg shadow-sm transition flex items-center justify-center shrink-0" title="อัปเดตข้อมูลล่าสุด">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        </button>
+                        <button id="prodExportBtn" class="bg-green-600 hover:bg-green-700 text-white p-2 sm:p-2.5 rounded-lg shadow-sm transition flex items-center justify-center shrink-0" title="ส่งออกข้อมูล (CSV)">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        </button>
                     </div>
-                    <button id="prodClearDate" class="text-gray-400 hover:text-red-500 transition-colors p-1.5 rounded-lg hover:bg-red-50" title="ล้างการกรองวันที่">
-                        <i class="ph ph-x-circle text-lg"></i>
-                    </button>
-                    <div class="w-px h-6 bg-gray-300 mx-1"></div>
-                    <button id="prodExportBtn" class="hidden text-xs bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-xl shadow-sm transition-colors flex items-center gap-1 shrink-0">
-                        <i class="ph ph-download-simple text-sm"></i> Export CSV
-                    </button>
                 </div>
             </div>
 
-            <!-- Product Table Container -->
-            <div class="glass-panel flex-1 rounded-2xl flex flex-col overflow-hidden relative shadow-md">
-                <div class="px-5 py-3 border-b border-gray-100/50 flex justify-between items-center bg-white/40 shrink-0">
-                    <h2 class="font-semibold text-medical-800 text-base flex items-center gap-2">
-                        <i class="ph ph-package text-medical-600"></i> ฐานข้อมูลผลิตภัณฑ์
-                    </h2>
-                    <div class="text-xs text-gray-500 font-medium bg-white px-3 py-1 rounded-full shadow-sm">
-                        แสดง <span id="prodRowCount" class="text-medical-600 font-bold">0</span> รายการ
-                    </div>
+            <!-- Date Filter Section (แบบใหม่) -->
+            <div id="prodDateFilterContainer" class="hidden bg-blue-50 border-b border-blue-100 p-2 sm:p-3 flex flex-wrap gap-3 items-center justify-center sm:justify-start text-xs sm:text-sm shrink-0 shadow-[0_2px_4px_rgba(0,0,0,0.02)] z-10 relative">
+                <div class="flex items-center text-blue-800 font-semibold mr-2">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    กรองวันที่:
                 </div>
+                <div class="flex items-center gap-2 bg-white rounded-md p-1 px-2 border border-blue-200 shadow-sm">
+                    <label for="prodStartDate" class="text-gray-500">ตั้งแต่</label>
+                    <input type="date" id="prodStartDate" class="bg-transparent outline-none text-gray-700 cursor-pointer">
+                </div>
+                <div class="flex items-center gap-2 bg-white rounded-md p-1 px-2 border border-blue-200 shadow-sm">
+                    <label for="prodEndDate" class="text-gray-500">ถึง</label>
+                    <input type="date" id="prodEndDate" class="bg-transparent outline-none text-gray-700 cursor-pointer">
+                </div>
+                <button id="prodClearDateBtn" class="text-blue-500 hover:text-red-500 underline ml-1 px-2 py-1 rounded hover:bg-white transition" title="ล้างการกรองวันที่">
+                    ล้าง
+                </button>
+            </div>
 
-                <div id="prodTableWrapper" class="flex-1 overflow-auto table-container bg-white/60">
-                    <table class="w-full text-left border-collapse min-w-max">
-                        <thead id="prodTableHead" class="bg-gray-50/90 backdrop-blur-md sticky top-0 z-10 shadow-[0_1px_2px_rgba(0,0,0,0.05)]"></thead>
-                        <tbody id="prodTableBody" class="divide-y divide-gray-100"></tbody>
-                    </table>
-                    <div id="prodNoResults" class="hidden py-16 flex flex-col items-center justify-center text-gray-400">
-                        <i class="ph ph-magnifying-glass-minus text-4xl mb-2 opacity-50"></i>
-                        <p class="text-base font-medium text-gray-500">ไม่พบข้อมูลผลิตภัณฑ์ที่ค้นหา</p>
-                    </div>
+            <!-- Status / Messages -->
+            <div id="prodStatusContainer" class="p-4 sm:p-6 text-center text-gray-500 shrink-0 mt-10">
+                <div id="prodLoadingIndicator" class="flex flex-col items-center justify-center space-y-2 sm:space-y-3">
+                    <div class="w-6 h-6 sm:w-8 sm:h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                    <p class="text-sm sm:text-base">กำลังโหลดข้อมูลจาก Google Sheets...</p>
                 </div>
+                <div id="prodErrorMessage" class="hidden bg-red-50 text-red-600 p-4 sm:p-6 rounded-lg border border-red-200 flex flex-col items-center max-w-2xl mx-auto mt-4">
+                    <svg class="w-6 h-6 sm:w-8 sm:h-8 mb-2 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    <p class="font-bold text-base sm:text-lg mb-2">ไม่สามารถดึงข้อมูลได้</p>
+                    <div class="text-xs sm:text-sm text-left bg-white/70 p-3 sm:p-4 rounded border border-red-100 w-full text-gray-700">
+                        <p class="font-semibold text-red-600 mb-1">สาเหตุที่เป็นไปได้:</p>
+                        <ul class="list-disc pl-4 sm:pl-5 space-y-1">
+                            <li>ไฟล์อาจจะยังไม่ได้ตั้งค่าแชร์เป็น สาธารณะ (Anyone with the link)</li>
+                            <li>ส่วนขยายบล็อกโฆษณา (Adblocker) ไปบล็อกการเชื่อมต่อ</li>
+                            <li>เครือข่ายอินเทอร์เน็ตที่ทำงาน/แอนตี้ไวรัสบล็อกการดึงข้อมูล</li>
+                        </ul>
+                    </div>
+                    <p id="prodErrorDetail" class="text-[10px] sm:text-xs text-red-400 mt-2 sm:mt-3"></p>
+                </div>
+            </div>
+
+            <!-- Table Container -->
+            <div id="prodTableWrapper" class="hidden flex-1 overflow-auto table-container relative bg-white w-full">
+                <table class="w-full text-left border-collapse min-w-max">
+                    <thead id="prodTableHead" class="bg-gray-50 sticky top-0 shadow-sm z-10 select-none"></thead>
+                    <tbody id="prodTableBody" class="divide-y divide-gray-200"></tbody>
+                </table>
+                <div id="prodNoResults" class="hidden p-6 sm:p-10 text-center text-gray-500">
+                    <svg class="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-gray-300 mb-2 sm:mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <p class="text-base sm:text-lg font-medium">ไม่พบข้อมูลที่ค้นหา</p>
+                    <p class="text-xs sm:text-sm mt-1">ลองเปลี่ยนคำค้นหา หรือล้างตัวกรองวันที่ดูอีกครั้ง</p>
+                </div>
+            </div>
+
+            <!-- Footer Info -->
+            <div class="bg-gray-50 p-2 sm:p-3 text-center text-[10px] sm:text-xs text-gray-500 border-t border-gray-200 shrink-0 shadow-[0_-2px_4px_rgba(0,0,0,0.02)] z-20 relative select-none">
+                อัปเดตล่าสุด: <span id="prodLastUpdated">-</span> | จำนวนที่แสดง: <span id="prodRowCount" class="font-bold text-blue-600">0</span> รายการ
             </div>
         </div>
 
@@ -397,14 +447,6 @@
         // ตัวแปรสำหรับเก็บข้อมูลที่จะ Export
         let currentExportHeaders = [];
         let currentExportRows = [];
-
-        // ตัวแปรสำหรับ Products
-        const prodCsvUrl = 'https://docs.google.com/spreadsheets/d/1JuneOZnbJJ_r7JdNW6Rnd-LZcQ9sAAPb__VVSc4ZtbY/export?format=csv&gid=1031226843';
-        let prodHeaders = [];
-        let prodRows = [];
-        let prodHeaderOrder = [];
-        let prodDisplayedData = [];
-        let isProductsLoaded = false;
 
         const globalLoader = document.getElementById('globalLoader');
         const loadingStatus = document.getElementById('loadingStatus');
@@ -1045,74 +1087,151 @@
         // ==========================================
         // 6. Products Data Logic (หน้าที่ 3)
         // ==========================================
+        const prodCsvUrl = 'https://docs.google.com/spreadsheets/d/1JuneOZnbJJ_r7JdNW6Rnd-LZcQ9sAAPb__VVSc4ZtbY/export?format=csv&gid=1031226843';
+
+        let prodRawData = [];
+        let prodHeaders = [];
+        let prodRows = [];
+        let prodCurrentHeaderOrder = []; 
+        let prodCurrentDisplayedData = []; 
+        let isProductsLoaded = false;
+
+        const prodSearch1 = document.getElementById('prodSearch1');
+        const prodSearch2 = document.getElementById('prodSearch2');
+        const prodStartDate = document.getElementById('prodStartDate');
+        const prodEndDate = document.getElementById('prodEndDate');
+        const prodClearDateBtn = document.getElementById('prodClearDateBtn');
+        const prodDateFilterContainer = document.getElementById('prodDateFilterContainer');
+        const prodExportBtn = document.getElementById('prodExportBtn');
+        const prodRefreshBtn = document.getElementById('prodRefreshBtn');
+        
+        const prodStatusContainer = document.getElementById('prodStatusContainer');
+        const prodLoadingIndicator = document.getElementById('prodLoadingIndicator');
+        const prodErrorMessage = document.getElementById('prodErrorMessage');
+        const prodErrorDetail = document.getElementById('prodErrorDetail');
+        const prodTableWrapper = document.getElementById('prodTableWrapper');
+        const prodTableHead = document.getElementById('prodTableHead');
+        const prodTableBody = document.getElementById('prodTableBody');
+        const prodNoResults = document.getElementById('prodNoResults');
+        const prodRowCount = document.getElementById('prodRowCount');
+        const prodLastUpdated = document.getElementById('prodLastUpdated');
+
         async function fetchProductsData() {
-            globalLoader.classList.remove('hidden');
-            loadingStatus.textContent = 'กำลังดึงข้อมูลผลิตภัณฑ์...';
+            if (isProductsLoaded && !prodStatusContainer.classList.contains('hidden')) return; // ป้องกันโหลดซ้ำซ้อน
             
-            try {
-                const encodedUrl = encodeURIComponent(prodCsvUrl);
-                const fetchSources = [
-                    { url: prodCsvUrl },
-                    { url: 'https://api.allorigins.win/raw?url=' + encodedUrl },
-                    { url: 'https://corsproxy.io/?' + encodedUrl }
-                ];
+            prodStatusContainer.classList.remove('hidden');
+            prodLoadingIndicator.classList.remove('hidden');
+            prodErrorMessage.classList.add('hidden');
+            prodTableWrapper.classList.add('hidden');
+            prodDateFilterContainer.classList.add('hidden');
+            prodSearch1.disabled = true;
+            prodSearch2.disabled = true;
+            prodErrorDetail.textContent = '';
 
-                let csvText = '';
-                for (const source of fetchSources) {
-                    try {
-                        const res = await fetch(source.url);
-                        if (!res.ok) continue;
-                        const text = await res.text();
-                        if (text.trim().toLowerCase().startsWith('<html')) continue;
-                        csvText = text;
-                        break;
-                    } catch (e) {}
+            const encodedUrl = encodeURIComponent(prodCsvUrl);
+            const fetchSources = [
+                { name: 'Google Direct', url: prodCsvUrl },
+                { name: 'Proxy 1 (AllOrigins)', url: 'https://api.allorigins.win/raw?url=' + encodedUrl },
+                { name: 'Proxy 2 (CorsProxy)', url: 'https://corsproxy.io/?' + encodedUrl }
+            ];
+
+            let csvText = '';
+            let fetchSuccess = false;
+            let lastErrorMsg = '';
+
+            for (const source of fetchSources) {
+                try {
+                    const response = await fetch(source.url);
+                    if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+                    const text = await response.text();
+                    
+                    if (text.trim().toLowerCase().startsWith('<!doctype html>')) {
+                        throw new Error('ไม่สามารถเข้าถึงข้อมูล CSV ได้ (สิทธิ์ไฟล์อาจไม่ใช่ Public)');
+                    }
+                    
+                    csvText = text;
+                    fetchSuccess = true;
+                    break;
+                } catch (err) {
+                    lastErrorMsg = err.message === 'Failed to fetch' ? 'โดนบล็อกการเชื่อมต่อ (Failed to fetch)' : err.message;
                 }
+            }
 
-                if (!csvText) throw new Error('ไม่สามารถเชื่อมต่อฐานข้อมูลผลิตภัณฑ์ได้');
+            if (!fetchSuccess) {
+                showProdError(lastErrorMsg);
+                return;
+            }
 
+            try {
                 Papa.parse(csvText, {
-                    header: false, skipEmptyLines: true,
+                    header: false,
+                    skipEmptyLines: true,
                     complete: function(results) {
                         if (results.data && results.data.length > 0) {
-                            prodHeaders = results.data[0];
-                            prodRows = results.data.slice(1);
-                            prodHeaderOrder = prodHeaders.map((_, i) => i);
+                            prodRawData = results.data;
+                            prodHeaders = prodRawData[0]; 
+                            prodRows = prodRawData.slice(1); 
+                            
+                            prodCurrentHeaderOrder = prodHeaders.map((_, i) => i); 
+                            
+                            prodStatusContainer.classList.add('hidden');
+                            prodTableWrapper.classList.remove('hidden');
+                            prodDateFilterContainer.classList.remove('hidden');
+                            prodSearch1.disabled = false;
+                            prodSearch2.disabled = false;
                             
                             isProductsLoaded = true;
-                            globalLoader.classList.add('hidden');
-                            applyProductFilters();
+                            applyProductFilters(); 
+                            
+                            const now = new Date();
+                            prodLastUpdated.textContent = now.toLocaleTimeString('th-TH') + ' น.';
+                        } else {
+                            throw new Error('ไม่พบข้อมูลใน Sheet');
                         }
+                    },
+                    error: function(err) {
+                        throw new Error('รูปแบบไฟล์ผิดพลาด: ' + err.message);
                     }
                 });
             } catch (err) {
-                globalLoader.classList.add('hidden');
-                showToast(err.message, true);
+                showProdError(err.message);
             }
+        }
+
+        function showProdError(detailMessage) {
+            prodLoadingIndicator.classList.add('hidden');
+            prodErrorMessage.classList.remove('hidden');
+            if(detailMessage) prodErrorDetail.textContent = 'รายละเอียด: ' + detailMessage;
         }
 
         function parseThaiDateForProduct(dateString) {
             if (!dateString) return null;
-            const parts = dateString.toString().split(/[-/]/);
+            const datePart = dateString.toString().trim().split(/[\sT]+/)[0];
+            const parts = datePart.split(/[-/]/);
             if (parts.length !== 3) return null;
+
             let d, m, y;
-            if (parts[0].length === 4) { y = parseInt(parts[0]); m = parseInt(parts[1]); d = parseInt(parts[2]); } 
-            else { d = parseInt(parts[0]); m = parseInt(parts[1]); y = parseInt(parts[2]); }
+            if (parts[0].length === 4) { // yyyy-mm-dd
+                y = parseInt(parts[0]); m = parseInt(parts[1]); d = parseInt(parts[2]);
+            } else { // dd/mm/yyyy
+                d = parseInt(parts[0]); m = parseInt(parts[1]); y = parseInt(parts[2]);
+            }
+
             if (isNaN(d) || isNaN(m) || isNaN(y)) return null;
             if (y > 2500) y -= 543;
+            
             return new Date(y, m - 1, d).getTime();
         }
 
         function applyProductFilters() {
             if (!isProductsLoaded) return;
-            const term1 = document.getElementById('prodSearch1').value.toLowerCase().trim();
-            const term2 = document.getElementById('prodSearch2').value.toLowerCase().trim();
-            const sDate = document.getElementById('prodStartDate').value;
-            const eDate = document.getElementById('prodEndDate').value;
-            const startVal = sDate ? new Date(sDate).getTime() : null;
-            const endVal = eDate ? new Date(eDate).setHours(23,59,59,999) : null;
+            const term1 = prodSearch1.value.toLowerCase().trim();
+            const term2 = prodSearch2.value.toLowerCase().trim();
+            const startVal = prodStartDate.value ? new Date(prodStartDate.value).getTime() : null;
+            const endVal = prodEndDate.value ? new Date(prodEndDate.value).setHours(23,59,59,999) : null;
 
             let matchColIndex = -1; 
+            const targetDateColumnIndex = 4; // ล็อคคอลัมน์ E (Index 4) สำหรับวันที่
             
             const filteredRows = prodRows.filter(row => {
                 let found1 = term1 === '';
@@ -1129,148 +1248,232 @@
                     }
                 });
 
+                const textMatch = found1 && found2;
+
                 let dateMatch = true;
                 if (startVal || endVal) {
                     dateMatch = false; 
-                    for (let i = 0; i < row.length; i++) {
-                        const cellDate = parseThaiDateForProduct(row[i]);
+                    if (row[targetDateColumnIndex] !== undefined) {
+                        const cellDate = parseThaiDateForProduct(row[targetDateColumnIndex]);
                         if (cellDate) {
                             let isAfterStart = startVal ? cellDate >= startVal : true;
                             let isBeforeEnd = endVal ? cellDate <= endVal : true;
-                            if (isAfterStart && isBeforeEnd) { dateMatch = true; break; }
+                            if (isAfterStart && isBeforeEnd) dateMatch = true;
                         }
                     }
                 }
-                return (found1 && found2) && dateMatch;
+                return textMatch && dateMatch;
             });
 
             if (matchColIndex !== -1 && term1 !== '') {
-                prodHeaderOrder = prodHeaders.map((_, i) => i);
-                prodHeaderOrder.splice(matchColIndex, 1);
-                prodHeaderOrder.unshift(matchColIndex);
+                prodCurrentHeaderOrder = prodHeaders.map((_, i) => i);
+                prodCurrentHeaderOrder.splice(matchColIndex, 1);
+                prodCurrentHeaderOrder.unshift(matchColIndex);
             } else if (term1 === '') {
-                prodHeaderOrder = prodHeaders.map((_, i) => i);
+                prodCurrentHeaderOrder = prodHeaders.map((_, i) => i);
             }
 
-            renderProductTable(filteredRows);
+            renderProdHeaders(prodCurrentHeaderOrder);
+            renderProdRows(filteredRows, prodCurrentHeaderOrder);
+            prodRowCount.textContent = filteredRows.length.toLocaleString();
         }
+
+        prodSearch1.addEventListener('input', applyProductFilters);
+        prodSearch2.addEventListener('input', applyProductFilters);
+        prodStartDate.addEventListener('change', applyProductFilters);
+        prodEndDate.addEventListener('change', applyProductFilters);
+        
+        prodClearDateBtn.addEventListener('click', () => {
+            prodStartDate.value = '';
+            prodEndDate.value = '';
+            applyProductFilters();
+        });
 
         function formatProdCellData(cellStr) {
             if (!cellStr) return '<span class="text-gray-300">-</span>';
             const str = cellStr.toString().trim();
+
             const driveRegex = /https:\/\/drive\.google\.com\/(?:file\/d\/|open\?id=)([-\w]+)/;
             const driveMatch = str.match(driveRegex);
             if (driveMatch) {
                 const imgUrl = `https://drive.google.com/uc?export=view&id=${driveMatch[1]}`;
-                return `<a href="${str}" target="_blank" class="text-medical-500 hover:text-medical-700 underline flex items-center gap-1 w-max"><i class="ph ph-image"></i> ดูรูปภาพ</a>`;
+                return `<div class="relative group"><img src="${imgUrl}" alt="รูป" class="h-10 sm:h-14 w-auto max-w-[80px] sm:max-w-[100px] object-cover rounded shadow-sm transition-transform duration-300 group-hover:scale-[2.5] group-hover:z-50 cursor-zoom-in relative bg-white" loading="lazy" onerror="this.onerror=null; this.outerHTML='<a href=\\'${str}\\' target=\\'_blank\\' class=\\'text-blue-500 underline\\'>ลิงก์</a>';"/></div>`;
             }
-            if (/^https?:\/\/.*\.(jpeg|jpg|gif|png|webp)(\?.*)?$/i.test(str)) {
-                return `<a href="${str}" target="_blank" class="text-medical-500 hover:text-medical-700 underline flex items-center gap-1 w-max"><i class="ph ph-image"></i> ดูรูปภาพ</a>`;
+
+            const imageRegex = /^https?:\/\/.*\.(jpeg|jpg|gif|png|webp)(\?.*)?$/i;
+            if (imageRegex.test(str)) {
+                return `<div class="relative group"><img src="${str}" alt="รูป" class="h-10 sm:h-14 w-auto max-w-[80px] sm:max-w-[100px] object-cover rounded shadow-sm transition-transform duration-300 group-hover:scale-[2.5] group-hover:z-50 cursor-zoom-in relative bg-white" loading="lazy" /></div>`;
             }
-            if (/^https?:\/\/[^\s]+$/i.test(str)) {
-                return `<a href="${str}" target="_blank" class="text-blue-500 hover:text-blue-700 underline flex items-center gap-1 w-max"><i class="ph ph-link"></i> เปิดลิงก์</a>`;
+
+            const urlRegex = /^https?:\/\/[^\s]+$/i;
+            if (urlRegex.test(str)) {
+                return `<a href="${str}" target="_blank" class="text-blue-600 hover:text-blue-800 underline">คลิกเปิดลิงก์</a>`;
             }
             return str;
         }
 
-        function renderProductTable(dataToRender) {
-            const tableHead = document.getElementById('prodTableHead');
-            const tableBody = document.getElementById('prodTableBody');
-            prodDisplayedData = dataToRender; 
-            
-            document.getElementById('prodRowCount').textContent = dataToRender.length.toLocaleString();
+        function renderProdHeaders(order) {
+            let theadHTML = '<tr>';
+            order.forEach((colIndex, i) => {
+                const header = prodHeaders[colIndex];
+                const bgClass = i === 0 && prodSearch1.value.trim() !== '' ? 'bg-blue-100 text-blue-800' : 'bg-gray-50 text-gray-600';
+                theadHTML += `<th class="px-4 sm:px-6 py-3 sm:py-4 text-[11px] sm:text-xs font-semibold ${bgClass} uppercase tracking-wider whitespace-nowrap transition-colors">${header || '-'}</th>`;
+            });
+            theadHTML += `<th class="px-4 sm:px-6 py-3 sm:py-4 text-[11px] sm:text-xs font-semibold bg-gray-50 text-gray-600 uppercase tracking-wider whitespace-nowrap text-center sticky right-0 z-20 shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.05)]">คัดลอก</th></tr>`;
+            prodTableHead.innerHTML = theadHTML;
+        }
+
+        function renderProdRows(dataToRender, order) {
+            prodTableBody.innerHTML = '';
+            prodCurrentDisplayedData = dataToRender; 
             
             if (dataToRender.length === 0) {
-                tableBody.parentElement.classList.add('hidden');
-                document.getElementById('prodNoResults').classList.remove('hidden');
-                document.getElementById('prodExportBtn').classList.add('hidden');
+                prodTableBody.parentElement.classList.add('hidden');
+                prodNoResults.classList.remove('hidden');
                 return;
             } else {
-                tableBody.parentElement.classList.remove('hidden');
-                document.getElementById('prodNoResults').classList.add('hidden');
-                document.getElementById('prodExportBtn').classList.remove('hidden');
+                prodTableBody.parentElement.classList.remove('hidden');
+                prodNoResults.classList.add('hidden');
             }
 
-            // Headers
-            let theadHTML = '<tr>';
-            prodHeaderOrder.forEach((colIndex, i) => {
-                const bgClass = i === 0 && document.getElementById('prodSearch1').value.trim() !== '' ? 'bg-medical-100 text-medical-800' : 'bg-gray-50/90 text-gray-500';
-                theadHTML += `<th class="px-5 py-3 text-xs font-semibold ${bgClass} uppercase tracking-wider whitespace-nowrap">${prodHeaders[colIndex] || '-'}</th>`;
-            });
-            theadHTML += `<th class="px-5 py-3 text-xs font-semibold bg-gray-50/90 text-gray-500 uppercase tracking-wider whitespace-nowrap text-center sticky right-0 shadow-[-1px_0_4px_-1px_rgba(0,0,0,0.05)]">คัดลอก</th></tr>`;
-            tableHead.innerHTML = theadHTML;
-
-            // Body
             let tbodyHTML = '';
             dataToRender.forEach((row, rowIndex) => {
-                tbodyHTML += '<tr class="hover:bg-blue-50/50 transition-colors group border-b border-gray-100/50">';
-                prodHeaderOrder.forEach((colIndex, i) => {
-                    const cellData = formatProdCellData(row[colIndex]);
-                    let cellClasses = 'text-gray-700';
-                    if (i === 0 && document.getElementById('prodSearch1').value.trim() !== '') cellClasses = 'font-medium text-medical-700 bg-medical-50/30';
-                    tbodyHTML += `<td class="px-5 py-2.5 text-sm whitespace-nowrap transition-colors ${cellClasses}">${cellData}</td>`;
+                tbodyHTML += '<tr class="even:bg-blue-50 hover:bg-blue-100 transition duration-150 group/row border-b border-gray-100">';
+                
+                order.forEach((colIndex, i) => {
+                    const cell = row[colIndex];
+                    const cellData = formatProdCellData(cell);
+                    
+                    let cellClasses = 'text-gray-600 group-hover/row:text-gray-800';
+                    if (i === 0 && prodSearch1.value.trim() !== '') {
+                        cellClasses = 'font-semibold text-blue-800 bg-blue-50/50 group-hover/row:text-gray-900 group-hover/row:bg-transparent';
+                    } else if (i === 0) {
+                        cellClasses = 'font-medium text-gray-900';
+                    }
+                    tbodyHTML += `<td class="px-4 sm:px-6 py-2 text-xs sm:text-sm ${cellClasses} whitespace-nowrap transition-colors">${cellData}</td>`;
                 });
+
                 tbodyHTML += `
-                    <td class="px-5 py-2.5 text-center whitespace-nowrap sticky right-0 bg-white group-hover:bg-blue-50/50 transition-colors shadow-[-1px_0_4px_-1px_rgba(0,0,0,0.05)]">
-                        <button type="button" class="prod-copy-btn text-medical-600 hover:text-white bg-medical-50 hover:bg-medical-600 p-1.5 rounded-lg shadow-sm transition-all focus:outline-none" data-row-index="${rowIndex}" title="คัดลอกข้อมูล">
-                            <i class="ph ph-copy text-lg pointer-events-none"></i>
+                    <td class="px-4 sm:px-6 py-2 text-center whitespace-nowrap sticky right-0 bg-white group-hover/row:bg-blue-100 transition-colors shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.05)] z-10">
+                        <button type="button" class="prod-copy-btn text-blue-600 hover:text-white bg-blue-50 hover:bg-blue-600 p-1.5 sm:p-2 rounded-lg shadow-sm border border-blue-200 transition-all focus:outline-none focus:ring-2 focus:ring-blue-400" data-row-index="${rowIndex}" title="คัดลอกข้อมูลบรรทัดนี้">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5 inline-block pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                         </button>
                     </td></tr>`;
             });
-            tableBody.innerHTML = tbodyHTML;
+            prodTableBody.innerHTML = tbodyHTML;
         }
 
-        // Product Events Listeners
-        document.getElementById('prodSearch1').addEventListener('input', applyProductFilters);
-        document.getElementById('prodSearch2').addEventListener('input', applyProductFilters);
-        document.getElementById('prodStartDate').addEventListener('change', applyProductFilters);
-        document.getElementById('prodEndDate').addEventListener('change', applyProductFilters);
-        document.getElementById('prodClearDate').addEventListener('click', () => {
-            document.getElementById('prodStartDate').value = ''; document.getElementById('prodEndDate').value = ''; applyProductFilters();
-        });
-
-        // Copy Button Event
-        document.getElementById('prodTableBody').addEventListener('click', function(e) {
+        // ปุ่มคัดลอก Products
+        prodTableBody.addEventListener('click', function(e) {
             const btn = e.target.closest('.prod-copy-btn');
             if (btn) {
                 const rowIndex = btn.getAttribute('data-row-index');
-                const rowData = prodDisplayedData[rowIndex]; 
+                const rowData = prodCurrentDisplayedData[rowIndex]; 
+                
                 let linesToCopy = [];
-                prodHeaderOrder.forEach(colIndex => {
-                    const hName = prodHeaders[colIndex] || '-';
-                    const cVal = rowData[colIndex] ? rowData[colIndex].trim() : '-';
-                    if (cVal !== '-' && cVal !== '') linesToCopy.push(`• ${hName} : ${cVal}`);
+                prodCurrentHeaderOrder.forEach(colIndex => {
+                    const headerName = prodHeaders[colIndex] || '-';
+                    const cellValue = rowData[colIndex] ? rowData[colIndex].trim() : '-';
+                    if (cellValue !== '-' && cellValue !== '') {
+                        linesToCopy.push(`• ${headerName} : ${cellValue}`);
+                    }
                 });
+
                 const textToCopy = linesToCopy.join('\n');
                 const textArea = document.createElement("textarea");
                 textArea.value = textToCopy;
-                textArea.style.position = "fixed"; textArea.style.opacity = "0";
-                document.body.appendChild(textArea); textArea.select();
+                textArea.style.position = "fixed";
+                textArea.style.opacity = "0";
+                document.body.appendChild(textArea);
+                textArea.select();
+
                 try {
-                    if (document.execCommand('copy')) {
-                        const originalHTML = btn.innerHTML; const originalClasses = btn.className;
-                        btn.innerHTML = `<i class="ph ph-check text-lg pointer-events-none"></i>`;
-                        btn.className = "prod-copy-btn text-white bg-green-500 p-1.5 rounded-lg shadow-sm transition-all pointer-events-none";
+                    const successful = document.execCommand('copy');
+                    if (successful) {
+                        const originalHTML = btn.innerHTML;
+                        const originalClasses = btn.className;
+                        
+                        btn.innerHTML = `<svg class="w-4 h-4 sm:w-5 sm:h-5 inline-block pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+                        btn.className = "prod-copy-btn text-white bg-green-500 hover:bg-green-600 p-1.5 sm:p-2 rounded-lg shadow-sm transition-all pointer-events-none";
+                        
                         showToast("คัดลอกข้อมูลผลิตภัณฑ์เรียบร้อยแล้ว");
-                        setTimeout(() => { btn.innerHTML = originalHTML; btn.className = originalClasses; }, 2000);
-                    } else showToast("ไม่สามารถคัดลอกได้", true);
-                } catch (err) { showToast("ไม่รองรับการคัดลอก", true); } 
-                finally { document.body.removeChild(textArea); }
+
+                        setTimeout(() => {
+                            btn.innerHTML = originalHTML;
+                            btn.className = originalClasses;
+                        }, 2000);
+                    } else {
+                        showToast("ไม่สามารถคัดลอกได้ เบราว์เซอร์อาจบล็อก", true);
+                    }
+                } catch (err) {
+                    showToast("ไม่รองรับการคัดลอกอัตโนมัติ", true);
+                } finally {
+                    document.body.removeChild(textArea);
+                }
             }
         });
 
-        // Export Products CSV
-        document.getElementById('prodExportBtn').addEventListener('click', function() {
-            if (!prodDisplayedData || prodDisplayedData.length === 0) return;
-            const exportHeaders = prodHeaderOrder.map(colIndex => prodHeaders[colIndex] || '-');
-            const exportRows = prodDisplayedData.map(row => prodHeaderOrder.map(colIndex => row[colIndex] ? row[colIndex].toString().trim() : ''));
-            const csvString = Papa.unparse([exportHeaders, ...exportRows]);
-            const blob = new Blob(['\uFEFF' + csvString], { type: 'text/csv;charset=utf-8;' });
+        // ฟังก์ชัน Export CSV Products
+        prodExportBtn.addEventListener('click', function() {
+            if (!prodCurrentDisplayedData || prodCurrentDisplayedData.length === 0) {
+                showToast("ไม่มีข้อมูลให้ส่งออกในขณะนี้", true);
+                return;
+            }
+
+            const exportHeaders = prodCurrentHeaderOrder.map(colIndex => prodHeaders[colIndex] || '-');
+            const exportRows = prodCurrentDisplayedData.map(row => {
+                return prodCurrentHeaderOrder.map(colIndex => {
+                    return row[colIndex] ? row[colIndex].toString().trim() : '';
+                });
+            });
+
+            const csvDataToExport = [exportHeaders, ...exportRows];
+            const csvString = Papa.unparse(csvDataToExport);
+            
+            const bom = '\uFEFF';
+            const blob = new Blob([bom + csvString], { type: 'text/csv;charset=utf-8;' });
+            
             const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `Products_Export_${new Date().toISOString().split('T')[0]}.csv`;
-            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            
+            const d = new Date();
+            const dateStr = `${d.getFullYear()}${(d.getMonth()+1).toString().padStart(2,'0')}${d.getDate().toString().padStart(2,'0')}_${d.getHours().toString().padStart(2,'0')}${d.getMinutes().toString().padStart(2,'0')}`;
+            link.setAttribute('download', `products_export_${dateStr}.csv`);
+            
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
             showToast("ดาวน์โหลดไฟล์ CSV ผลิตภัณฑ์เรียบร้อยแล้ว");
+        });
+
+        // ระบบลากเพื่อเลื่อนซ้ายขวา (Drag to scroll) สำหรับ Products
+        let isDown = false; let startX; let scrollLeft;
+        prodTableWrapper.addEventListener('mousedown', (e) => {
+            if(e.target.closest('button') || e.target.closest('a') || e.target.closest('img') || e.target.closest('input')) return;
+            isDown = true;
+            prodTableWrapper.classList.add('no-select'); 
+            startX = e.pageX - prodTableWrapper.offsetLeft;
+            scrollLeft = prodTableWrapper.scrollLeft;
+        });
+        prodTableWrapper.addEventListener('mouseleave', () => { isDown = false; prodTableWrapper.classList.remove('no-select'); });
+        prodTableWrapper.addEventListener('mouseup', () => { isDown = false; prodTableWrapper.classList.remove('no-select'); });
+        prodTableWrapper.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - prodTableWrapper.offsetLeft;
+            prodTableWrapper.scrollLeft = scrollLeft - ((x - startX) * 1.5); 
+        });
+
+        prodRefreshBtn.addEventListener('click', function() {
+            prodSearch1.value = ''; 
+            prodSearch2.value = ''; 
+            prodStartDate.value = '';
+            prodEndDate.value = '';
+            isProductsLoaded = false;
+            fetchProductsData(); 
         });
 
         // ==========================================
