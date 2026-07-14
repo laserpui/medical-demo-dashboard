@@ -9,13 +9,30 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="app.css">
+  <link rel="stylesheet" href="enhancements.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js" defer></script>
   <script src="https://unpkg.com/@phosphor-icons/web" defer></script>
-  <script src="app.js" defer></script>
+  <script src="auth.js" defer></script>
 </head>
 <body>
   <div class="ambient ambient-a"></div><div class="ambient ambient-b"></div>
+
+  <div id="loginOverlay" class="login-overlay">
+    <form id="loginForm" class="login-card" novalidate>
+      <div class="login-logo-wrap"><img src="Laser Engineer_Logo_JPEG-01.jpg" alt="Laser Engineer" class="login-logo"></div>
+      <div class="login-icon"><i class="ph ph-lock-key"></i></div>
+      <p class="panel-kicker">SECURE ACCESS</p>
+      <h2>เข้าสู่ระบบ Medical Analytics</h2>
+      <p class="login-subtitle">กรุณากรอกอีเมลและรหัสผ่านเพื่อเข้าสู่แดชบอร์ด</p>
+      <label for="emailInput">อีเมลของคุณ</label>
+      <div class="login-input"><i class="ph ph-envelope-simple"></i><input type="email" id="emailInput" autocomplete="email" placeholder="example@gmail.com" required></div>
+      <label for="passwordInput">รหัสผ่าน</label>
+      <div class="login-input"><i class="ph ph-key"></i><input type="password" id="passwordInput" autocomplete="current-password" placeholder="••••••••" required><button type="button" id="togglePassword" aria-label="แสดงหรือซ่อนรหัสผ่าน"><i class="ph ph-eye"></i></button></div>
+      <p id="loginError" class="login-error hidden"><i class="ph ph-warning-circle"></i> อีเมลหรือรหัสผ่านไม่ถูกต้อง โปรดลองอีกครั้ง</p>
+      <button type="submit" id="loginBtn" class="login-submit"><span>ยืนยันการเข้าถึง</span><i class="ph ph-arrow-right"></i></button>
+    </form>
+  </div>
 
   <div id="loadingScreen" class="loading-screen">
     <div class="loader-mark"><span></span><span></span><span></span></div>
@@ -25,8 +42,8 @@
 
   <div class="app-shell">
     <aside class="sidebar">
-      <a class="brand" href="#" aria-label="Medical Intelligence">
-        <span class="brand-mark"><i class="ph ph-waveform"></i></span>
+      <a class="brand" href="#" aria-label="Laser Engineer Medical Intelligence">
+        <span class="brand-image"><img src="Laser Engineer_Logo_JPEG-01.jpg" alt="Laser Engineer"></span>
         <span><b>MEDICAL</b><small>INTELLIGENCE</small></span>
       </a>
 
@@ -44,9 +61,12 @@
 
     <main class="workspace">
       <header class="topbar">
-        <div>
-          <p class="eyebrow">EXECUTIVE OVERVIEW</p>
-          <h1 id="pageTitle">ภาพรวมประสิทธิภาพ Demo</h1>
+        <div class="header-identity">
+          <img src="Laser Engineer_Logo_JPEG-01.jpg" alt="Laser Engineer" class="header-logo">
+          <div>
+            <p class="eyebrow">EXECUTIVE OVERVIEW</p>
+            <h1 id="pageTitle">ภาพรวมประสิทธิภาพ Demo</h1>
+          </div>
         </div>
         <div class="top-actions">
           <button id="mobileNavBtn" class="icon-btn mobile-only" aria-label="เปิดเมนู"><i class="ph ph-list"></i></button>
@@ -128,7 +148,8 @@
 
       <section id="productsView" class="view">
         <article class="panel records-panel">
-          <div class="records-toolbar"><div><p class="panel-kicker">PRODUCT CATALOG</p><h2>ข้อมูลผลิตภัณฑ์</h2></div><div class="toolbar-right"><div class="search-box"><i class="ph ph-magnifying-glass"></i><input id="productSearch" type="search" placeholder="ค้นหาข้อมูลผลิตภัณฑ์…"></div><button id="exportProducts" class="primary-btn"><i class="ph ph-download-simple"></i> Export CSV</button></div></div>
+          <input id="productSearch" type="search" class="hidden" tabindex="-1" aria-hidden="true">
+          <div class="records-toolbar product-toolbar"><div><p class="panel-kicker">PRODUCT CATALOG</p><h2>ข้อมูลผลิตภัณฑ์</h2></div><div class="toolbar-right product-searches"><div class="search-box"><i class="ph ph-magnifying-glass"></i><input id="productSearch1" type="search" placeholder="คำค้นหาที่ 1…"></div><div class="search-box"><i class="ph ph-funnel"></i><input id="productSearch2" type="search" placeholder="กรองด้วยคำที่ 2…"></div><button id="exportProducts" class="primary-btn"><i class="ph ph-download-simple"></i> Export CSV</button></div></div>
           <div id="productStatus" class="product-status">เลือกเมนูผลิตภัณฑ์เพื่อโหลดข้อมูล</div>
           <div class="table-scroll product-scroll"><table class="records-table"><thead id="productHead"></thead><tbody id="productBody"></tbody></table></div>
           <div class="pagination"><button id="prevProductPage"><i class="ph ph-caret-left"></i></button><span id="productPageInfo">หน้า 1 / 1</span><button id="nextProductPage"><i class="ph ph-caret-right"></i></button></div>

@@ -25,7 +25,7 @@ python -m http.server 8080
 
 ## หมายเหตุด้านความปลอดภัย
 
-เว็บต้นฉบับตรวจอีเมลและรหัสผ่านใน JavaScript ฝั่ง browser ซึ่งผู้ใช้สามารถอ่านค่าได้จาก source code จึงไม่ใช่ระบบยืนยันตัวตนที่ปลอดภัย เวอร์ชันนี้ไม่ได้คัดลอกรหัสผ่านดังกล่าวมา หากต้องจำกัดสิทธิ์จริง ควรวางเว็บหลัง Google Apps Script/Workspace authentication, Cloudflare Access หรือ backend ที่ตรวจ session ฝั่ง server
+เวอร์ชันนี้นำระบบตรวจอีเมล รหัสผ่าน และ session แบบเดิมกลับมาใช้ตามความต้องการ โดยค่าทั้งหมดยังอยู่ใน JavaScript ฝั่ง browser จึงเหมาะสำหรับเป็น access gate เบื้องต้น ไม่ใช่ระบบยืนยันตัวตนที่ปลอดภัย หากต้องจำกัดสิทธิ์จริงควรใช้ Google Workspace authentication, Cloudflare Access หรือ backend ที่ตรวจ session ฝั่ง server
 
 ## โครงสร้าง
 
