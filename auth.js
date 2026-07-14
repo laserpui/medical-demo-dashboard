@@ -80,6 +80,7 @@ function startApplication() {
 function installTwoProductSearches() {
   const first = document.getElementById('productSearch1');
   const second = document.getElementById('productSearch2');
+  const reset = document.getElementById('resetProductSearch');
   let timer;
 
   filterProducts = function () {
@@ -101,4 +102,11 @@ function installTwoProductSearches() {
   };
   first.addEventListener('input', handleSearch);
   second.addEventListener('input', handleSearch);
+  reset.addEventListener('click', () => {
+    clearTimeout(timer);
+    first.value = '';
+    second.value = '';
+    filterProducts();
+    first.focus();
+  });
 }

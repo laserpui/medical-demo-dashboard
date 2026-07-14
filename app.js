@@ -269,6 +269,8 @@ function spark(id,data,color){chart(id,{type:'line',data:{labels:data.map((_,i)=
 function switchView(view) {
   state.currentView=view; document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===view)); document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   $(`${view}View`).classList.add('active'); document.querySelector('.sidebar').classList.remove('open');
+  const isProductView = view === 'products';
+  $('filterPanel').classList.toggle('hidden', isProductView); $('filterToggle').classList.toggle('hidden', isProductView);
   const titles={analytics:'ภาพรวมประสิทธิภาพ Demo',records:'รายการ Demo ทั้งหมด',products:'ฐานข้อมูลผลิตภัณฑ์'}; $('pageTitle').textContent=titles[view];
   if(view==='products'&&!state.productsLoaded)loadProducts();
   if(view==='analytics')setTimeout(()=>Object.values(state.charts).forEach(c=>c.resize()),50);
